@@ -1,0 +1,188 @@
+<style>
+span{color:red;}
+body {width:1050px}
+</style>
+
+<body>
+
+<div style="font-family:Arial,sans-serif;max-width:900px;margin:auto;
+border-radius:12px;overflow:hidden;
+box-shadow:0 6px 20px rgba(0,0,0,.15);">
+
+<div style="
+background:linear-gradient(135deg,#0B6623,#1E8449);
+padding:35px;
+text-align:center;
+color:white;">
+
+<h1 style="margin:0;font-size:38px;">
+🌿ISUGID KAY PENRO
+</h1>
+
+<p style="font-size:20px;margin-top:10px;">
+"A Citizen Reporting Initiative of DENR-PENRO Negros Occidental"
+</p>
+</div>
+
+<div style="padding:35px;background:#f4f7f3; height:1200px;">
+
+<h2 style="color:#0B6623;">
+Reporting Requirements
+</h2>
+
+<ul style="line-height:1.8;color:#333;">
+<li>Name of reporting person (optional)</li>
+<li>Contact number / email address</li>
+<li>Location of concern</li>
+<li>Date and time of occurrence</li>
+<li>Brief description</li>
+<li>Photo/Video Drive Link / Supporting Information</li>
+</ul>
+
+<hr style="margin:25px 0;">
+<h2 style="color:#0B6623;">
+Submit Environmental Report
+</h2>
+
+<form id="isugid_form">
+
+  <label><strong>Name (Optional)</strong></label><br>
+  <input type="text" id="reporter_name" name="name" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;">
+
+  <label><strong>Contact Number</strong><span>*</span></label><br>
+  <input type="text" id="contact_info" name="contact" pattern="[0-9+]*"
+    inputmode="numeric"
+    placeholder="e.g., 09123456789 or +639123456789"
+    oninput="this.value = this.value.replace(/[^0-9+]/g, '');" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;" required>
+
+  <label><strong>Email Address</strong></label><br>
+  <input type="email" id="email_info" name="email_add" placeholder="example@gmail.com" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;">
+
+  <label><strong>Location of Incident</strong><span>*</span></label><br>
+  <input type="text" id="location" name="location" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;" required>
+
+  <label><strong>Date & Time</strong><span>*</span></label><br>
+  <input type="datetime-local" id="date_time" name="dateTime" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;" required>
+
+  <label><strong>Concern Type</strong><span>*</span></label><br>
+  <select id="concern_type" name="concernType" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;" required>
+    <option value="">Select...</option>
+    <option value="Illegal cutting of trees">Illegal cutting of trees</option>
+    <option value="Illegal dumping or improper waste disposal">Illegal dumping or improper waste disposal</option>
+    <option value="Open burning">Open burning</option>
+    <option value="River, coastal, and marine pollution">River, coastal, and marine pollution</option>
+    <option value="Quarrying and extraction concerns">Quarrying and extraction concerns</option>
+    <option value="Wildlife-related concerns">Wildlife-related concerns</option>
+    <option value="Forest fire incidents">Forest fire incidents</option>
+    <option value="Encroachment in forestlands / protected areas">Encroachment in forestlands / protected areas</option>
+    <option value="Environment degradation concerns">Environment degradation concerns</option>
+    <option value="Flooding and drainage obstruction caused by environment factors">Flooding and drainage obstruction caused by environment factors</option>
+    <option value="Other environment and natural resources- related concerns">Other environment and natural resources- related concerns</option>
+  </select>
+
+  <label><strong>Description</strong><span>*</span></label><br>
+  <textarea id="description" name="description" rows="6" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;" required></textarea>
+
+  <label><strong>Upload Photo/Video</strong><span>*</span></label><br>
+  <input type="file" id="drive_link" name="driveLink" accept="image/*,video/*" style="width:100%;padding:12px;margin:8px 0 20px; border-radius:8px;border:1px solid #ccc;" >
+
+  <button type="submit" style="background:#0B6623; color:white; padding:15px 30px; border:none; border-radius:10px; font-size:18px; cursor:pointer; width:100%;">
+    SUBMIT REPORT
+  </button>
+
+<div id="status" style="margin-top:15px;font-weight:bold;"></div>
+</form>
+
+</div>
+</div>
+
+</body>
+
+<script>
+const scriptURL = 'https://script.google.com/macros/s/AKfycbyLdl2xyP1lYbFMNKmAgRlbZUVxErcxaqR4z65cPyPYJf4QXKPPiq6AYss-S6hT0RK2/exec';
+const form = document.getElementById('isugid_form');
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  document.getElementById('status').innerHTML = '';
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'UPLOADING FILE & SUBMITTING...';
+
+  const fileInput = document.getElementById('drive_link');
+  const file = fileInput.files[0];
+
+  const formData = {
+    name: document.getElementById('reporter_name').value,
+    contact: document.getElementById('contact_info').value,
+    email: document.getElementById('email_info').value,
+    location: document.getElementById('location').value,
+    dateTime: document.getElementById('date_time').value,
+    concernType: document.getElementById('concern_type').value,
+    description: document.getElementById('description').value,
+    fileData: [],
+    fileName: '',
+    mimeType: ''
+  };
+
+  // Limit file size to 5 MB
+  if (file && file.size > 5 * 1024 * 1024) {
+    document.getElementById('status').innerHTML ='<p style="color:red;">Maximum file size is 5 MB.</p>';
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'SUBMIT REPORT';
+    return;
+  }
+
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+      // THE FIX: Convert file to a raw byte array instead of a massive string loop
+      const arrayBuffer = event.target.result;
+      const byteArray = new Uint8Array(arrayBuffer);
+      const rawBytes = Array.from(byteArray);
+      
+      formData.fileData = rawBytes;
+      formData.fileName = file.name;
+      formData.mimeType = file.type;
+
+      console.log('Sending file safely as byte array:', file.name);
+      sendData(formData, submitBtn);
+    };
+
+    reader.onerror = function() {
+      document.getElementById('status').innerHTML ='<p style="color:red;">Unable to read file.</p>';
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'SUBMIT REPORT';
+    };
+
+    reader.readAsArrayBuffer(file);
+
+  } else {
+    sendData(formData, submitBtn);
+  }
+});
+
+function sendData(data, button) {
+  fetch(scriptURL, {
+    method: 'POST',
+    mode: 'no-cors', 
+ 
+    body: JSON.stringify(data)
+  })
+  .then(() => {
+    document.getElementById('status').innerHTML = '<p style="color:green;">✓ Report submitted successfully.</p>';
+    form.reset();
+    button.disabled = false;
+    button.innerText = 'SUBMIT REPORT';
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    document.getElementById('status').innerHTML = '<p style="color:red;">✗ Submission failed.</p>';
+    button.disabled = false;
+    button.innerText = 'SUBMIT REPORT';
+  });
+}
+</script>
