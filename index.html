@@ -625,50 +625,87 @@
 
     <script>
 const modal = document.getElementById("suggestionModal");
-const scriptURL = "https://script.google.com/macros/s/AKfycbyLdl2xyP1lYbFMNKmAgRlbZUVxErcxaqR4z65cPyPYJf4QXKPPiq6AYss-S6hT0RK2/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbyI6ss_o7AEvq2xD0pKpcCzAFr4ELOz-RYxjhU-cGbaICXH0WBLzlEzl6rd9-21t3OU/exec";
 
 function openSuggestionModal() {
   modal.style.display = "block";
 }
+
 function closeSuggestionModal() {
   modal.style.display = "none";
 }
+
 window.onclick = function(event) {
-  if (event.target === modal) closeSuggestionModal();
+  if (event.target === modal) {
+    closeSuggestionModal();
+  }
 };
 
-document.getElementById("suggestionForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
+document
+  .getElementById("suggestionForm")
+  .addEventListener("submit", async function(e) {
 
-  const form = this;
-  const submitBtn = form.querySelector('button[type="submit"]');
-  const suggestion = document.getElementById("suggestionText").value.trim();
-  if (!suggestion) return;
+    e.preventDefault();
 
-  submitBtn.disabled = true;
-  submitBtn.textContent = "SUBMITTING...";
+    const form = this;
+    const suggestion =
+      document.getElementById("suggestionText").value.trim();
 
-  try {
-    await fetch(scriptURL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        formType: "suggestion",
-        suggestion: suggestion
-      })
-    });
+    const status =
+      document.getElementById("suggestionStatus");
 
-    alert("Thank you! Your suggestion has been submitted.");
-    form.reset();
-    closeSuggestionModal();
-  } catch (error) {
-    console.error(error);
-    alert("Unable to submit your suggestion. Please try again.");
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Submit Suggestion";
-  }
+    const button =
+      form.querySelector('button[type="submit"]');
+
+    if (!suggestion) {
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "SUBMITTING...";
+
+    status.innerHTML =
+      '<span style="color:#555;">Submitting suggestion...</span>';
+
+    const data = {
+      formType: "suggestion",
+      suggestion: suggestion
+    };
+
+    try {
+
+      await fetch(scriptURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(data)
+      });
+
+      status.innerHTML =
+        '<span style="color:green;">✓ Suggestion submitted successfully.</span>';
+
+      form.reset();
+
+      setTimeout(() => {
+        closeSuggestionModal();
+        status.innerHTML = "";
+      }, 1800);
+
+    } catch (error) {
+
+      console.error("Suggestion error:", error);
+
+      status.innerHTML =
+        '<span style="color:red;">✗ Unable to submit suggestion.</span>';
+
+    } finally {
+
+      button.disabled = false;
+      button.textContent = "Submit Suggestion";
+
+    }
 });
 </script>
 </body>
