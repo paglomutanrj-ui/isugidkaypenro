@@ -182,13 +182,45 @@ Submit Environmental Report
 const cityMuniSelect = document.getElementById('city_municipality');
 const barangaySelect = document.getElementById('barangay');
  
-// Populate City/Municipality dropdown (Negros Occidental Province only, A-Z)
-Object.keys(negOccData).forEach(muni => {
-  const opt = document.createElement('option');
-  opt.value = muni;
-  opt.textContent = muni;
-  cityMuniSelect.appendChild(opt);
-});
+// Populate City/Municipality dropdown grouped into Cities and Municipalities
+const cities = [
+  "Bacolod City (Capital)",
+  "Bago",
+  "Cadiz",
+  "Escalante",
+  "Himamaylan",
+  "Kabankalan",
+  "La Carlota",
+  "Sagay",
+  "San Carlos",
+  "Silay",
+  "Sipalay",
+  "Talisay",
+  "Victorias"
+];
+
+const cityGroup = document.createElement('optgroup');
+cityGroup.label = 'Cities';
+
+const municipalityGroup = document.createElement('optgroup');
+municipalityGroup.label = 'Municipalities';
+
+Object.keys(negOccData)
+  .sort((a, b) => a.localeCompare(b))
+  .forEach(place => {
+    const opt = document.createElement('option');
+    opt.value = place;
+    opt.textContent = place;
+
+    if (cities.includes(place)) {
+      cityGroup.appendChild(opt);
+    } else {
+      municipalityGroup.appendChild(opt);
+    }
+  });
+
+cityMuniSelect.appendChild(cityGroup);
+cityMuniSelect.appendChild(municipalityGroup);
  
 // Populate Barangay dropdown based on selected City/Municipality
 cityMuniSelect.addEventListener('change', () => {
