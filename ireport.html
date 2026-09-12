@@ -285,90 +285,84 @@ cityMuniSelect.addEventListener('change', () => {
   
 const scriptURL = 'https://script.google.com/macros/s/AKfycbyLdl2xyP1lYbFMNKmAgRlbZUVxErcxaqR4z65cPyPYJf4QXKPPiq6AYss-S6hT0RK2/exec';
 const form = document.getElementById('isugid_form');
- 
+
 form.addEventListener('submit', (e) => {
   e.preventDefault();
- 
-  document.getElementById('status').innerHTML = '';
- 
+
+  const status = document.getElementById('status');
   const submitBtn = form.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.innerText = 'UPLOADING FILE & SUBMITTING...';
- 
   const fileInput = document.getElementById('drive_link');
   const file = fileInput.files[0];
- 
-  const formData = {
-    name: document.getElementById('reporter_name').value,
-    contact: document.getElementById('contact_info').value,
-    email: document.getElementById('email_info').value,
-    purok: document.getElementById('purok').value,
-    cityMunicipality: document.getElementById('city_municipality').value,
-    barangay: document.getElementById('barangay').value,
-    dateTime: document.getElementById('date_time').value,
-    concernType: document.getElementById('concern_type').value,
-    description: document.getElementById('description').value,
-    fileData: [],
-    fileName: '',
-    mimeType: ''
-  };
- 
-  // Limit file size to 5 MB
+
+  status.innerHTML = '';
+  submitBtn.disabled = true;
+  submitBtn.innerText = file ? 'UPLOADING FILE & SUBMITTING...' : 'SUBMITTING...';
+
   if (file && file.size > 5 * 1024 * 1024) {
-    document.getElementById('status').innerHTML ='<p style="color:red;">Maximum file size is 5 MB.</p>';
+    status.innerHTML = '<p style="color:red;">Maximum file size is 5 MB.</p>';
     submitBtn.disabled = false;
     submitBtn.innerText = 'SUBMIT REPORT';
     return;
   }
- 
-  if (file) {
-    const reader = new FileReader();
- 
-    reader.onload = function(event) {
-      // THE FIX: Convert file to a raw byte array instead of a massive string loop
-      const arrayBuffer = event.target.result;
-      const byteArray = new Uint8Array(arrayBuffer);
-      const rawBytes = Array.from(byteArray);
-      
-      formData.fileData = rawBytes;
-      formData.fileName = file.name;
-      formData.mimeType = file.type;
- 
-      console.log('Sending file safely as byte array:', file.name);
-      sendData(formData, submitBtn);
-    };
- 
-    reader.onerror = function() {
-      document.getElementById('status').innerHTML ='<p style="color:red;">Unable to read file.</p>';
-      submitBtn.disabled = false;
-      submitBtn.innerText = 'SUBMIT REPORT';
-    };
- 
-    reader.readAsArrayBuffer(file);
- 
-  } else {
-    sendData(formData, submitBtn);
+
+  const formData = {
+    formType: 'report',
+    name: document.getElementById('reporter_name').value.trim(),
+    contact: document.getElementById('contact_info').value.trim(),
+    email: document.getElementById('email_info').value.trim(),
+    purok: document.getElementById('purok').value.trim(),
+    cityMunicipality: document.getElementById('city_municipality').value,
+    barangay: document.getElementById('barangay').value,
+    dateTime: document.getElementById('date_time').value,
+    concernType: document.getElementById('concern_type').value,
+    description: document.getElementById('description').value.trim(),
+    others: '',
+    fileData: '',
+    fileName: '',
+    mimeType: ''
+  };
+
+  if (!file) {
+    sendReport(formData, submitBtn, status);
+    return;
   }
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const dataUrl = event.target.result;
+    formData.fileData = dataUrl.split(',')[1];
+    formData.fileName = file.name;
+    formData.mimeType = file.type || 'application/octet-stream';
+    sendReport(formData, submitBtn, status);
+  };
+  reader.onerror = function() {
+    status.innerHTML = '<p style="color:red;">Unable to read the selected file.</p>';
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'SUBMIT REPORT';
+  };
+  reader.readAsDataURL(file);
 });
- 
-function sendData(data, button) {
-  fetch(scriptURL, {
-    method: 'POST',
-    mode: 'no-cors', 
- 
-    body: JSON.stringify(data)
-  })
-  .then(() => {
-    document.getElementById('status').innerHTML = '<p style="color:green;">✓ Report submitted successfully.</p>';
+
+async function sendReport(data, button, status) {
+  try {
+    await fetch(scriptURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+
+    status.innerHTML = '<p style="color:green;">✓ Report submitted successfully.</p>';
     form.reset();
+    barangaySelect.innerHTML = '<option value="">Select City/Municipality first...</option>';
+    barangaySelect.disabled = true;
+  } catch (error) {
+    console.error(error);
+    status.innerHTML = '<p style="color:red;">✗ Submission failed. Please try again.</p>';
+  } finally {
     button.disabled = false;
     button.innerText = 'SUBMIT REPORT';
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    document.getElementById('status').innerHTML = '<p style="color:red;">✗ Submission failed.</p>';
-    button.disabled = false;
-    button.innerText = 'SUBMIT REPORT';
-  });
+  }
 }
+
 </script>
