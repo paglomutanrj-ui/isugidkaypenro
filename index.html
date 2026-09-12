@@ -640,16 +640,38 @@
             }
         };
 
+       const scriptURL = 'https://script.google.com/macros/s/AKfycbyLdl2xyP1lYbFMNKmAgRlbZUVxErcxaqR4z65cPyPYJf4QXKPPiq6AYss-S6hT0RK2/exec';
+
         document.getElementById("suggestionForm").addEventListener("submit", function(e) {
             e.preventDefault();
             const suggestion = document.getElementById("suggestionText").value;
-            
-            // Log hook for external API injection pipelines (e.g. Google Apps Script)
-            console.log("Captured Suggestion payload:", suggestion);
-            
-            alert("Thank you for your valuable recommendation!");
-            this.reset();
-            closeSuggestionModal();
+            const form = this;
+            const submitBtn = form.querySelector('.submit-btn');
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Submitting...';
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    formType: 'suggestion',
+                    suggestion: suggestion
+                })
+            })
+            .then(() => {
+                alert("Thank you for your valuable recommendation!");
+                form.reset();
+                closeSuggestionModal();
+            })
+            .catch((error) => {
+                console.error('Suggestion submission error:', error);
+                alert("Something went wrong submitting your suggestion. Please try again.");
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Submit Suggestion';
+            });
         });
     </script>
 </body>
