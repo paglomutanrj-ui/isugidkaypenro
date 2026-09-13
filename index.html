@@ -612,18 +612,20 @@
     </footer>
 
     <div id="suggestionModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeSuggestionModal()">&times;</span>
-            <h2>Submit Your Suggestion</h2>
-            <p>We value your ideas, suggestions and recommendations.</p>
-            <form id="suggestionForm">
-                <textarea id="suggestionText" placeholder="Type your suggestion here..." required></textarea>
-                <button type="submit" class="submit-btn">Submit Suggestion</button>
-            </form>
-        </div>
-    </div>
+  <div class="modal-content">
+    <span class="close" onclick="closeSuggestionModal()">&times;</span>
+    <h2>Submit Your Suggestion</h2>
+    <p>We value your ideas, suggestions and recommendations.</p>
+    <form id="suggestionForm">
+      <textarea id="suggestionText" placeholder="Type your suggestion here..." required></textarea>
+      <button type="submit" class="submit-btn">Submit Suggestion</button>
+    </form>
+    <!-- Added status message wrapper -->
+    <div id="suggestionStatus" style="margin-top: 10px;"></div>
+  </div>
+</div>
 
-    <script>
+<script>
 const modal = document.getElementById("suggestionModal");
 const scriptURL = "https://script.google.com/macros/s/AKfycbyI6ss_o7AEvq2xD0pKpcCzAFr4ELOz-RYxjhU-cGbaICXH0WBLzlEzl6rd9-21t3OU/exec";
 
@@ -641,72 +643,49 @@ window.onclick = function(event) {
   }
 };
 
-document
-  .getElementById("suggestionForm")
-  .addEventListener("submit", async function(e) {
+document.getElementById("suggestionForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
 
-    e.preventDefault();
+  const form = this;
+  const suggestion = document.getElementById("suggestionText").value.trim();
+  const status = document.getElementById("suggestionStatus");
+  const button = form.querySelector('button[type="submit"]');
 
-    const form = this;
-    const suggestion =
-      document.getElementById("suggestionText").value.trim();
+  if (!suggestion) return;
 
-    const status =
-      document.getElementById("suggestionStatus");
+  button.disabled = true;
+  button.textContent = "SUBMITTING...";
+  status.innerHTML = '<span style="color:#555;">Submitting suggestion...</span>';
 
-    const button =
-      form.querySelector('button[type="submit"]');
+  const data = {
+    formType: "suggestion",
+    suggestion: suggestion
+  };
 
-    if (!suggestion) {
-      return;
-    }
+  try {
+    await fetch(scriptURL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(data)
+    });
 
-    button.disabled = true;
-    button.textContent = "SUBMITTING...";
+    status.innerHTML = '<span style="color:green;">✓ Suggestion submitted successfully.</span>';
+    form.reset();
 
-    status.innerHTML =
-      '<span style="color:#555;">Submitting suggestion...</span>';
+    setTimeout(() => {
+      closeSuggestionModal();
+      status.innerHTML = "";
+    }, 1800);
 
-    const data = {
-      formType: "suggestion",
-      suggestion: suggestion
-    };
-
-    try {
-
-      await fetch(scriptURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(data)
-      });
-
-      status.innerHTML =
-        '<span style="color:green;">✓ Suggestion submitted successfully.</span>';
-
-      form.reset();
-
-      setTimeout(() => {
-        closeSuggestionModal();
-        status.innerHTML = "";
-      }, 1800);
-
-    } catch (error) {
-
-      console.error("Suggestion error:", error);
-
-      status.innerHTML =
-        '<span style="color:red;">✗ Unable to submit suggestion.</span>';
-
-    } finally {
-
-      button.disabled = false;
-      button.textContent = "Submit Suggestion";
-
-    }
+  } catch (error) {
+    console.error("Suggestion error:", error);
+    status.innerHTML = '<span style="color:red;">✗ Unable to submit suggestion.</span>';
+  } finally {
+    button.disabled = false;
+    button.textContent = "Submit Suggestion";
+  }
 });
 </script>
-</body>
-</html>
