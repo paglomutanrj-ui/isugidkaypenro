@@ -576,7 +576,7 @@
             <div>
                 <i class="fas fa-location-dot"></i>
                 <h3>Visit Us</h3>
-                <p><a href="http://maps.google.com/?q=DENR+PENRO+Bacolod+City" target="_blank">Brgy. 39, Bacolod City ↗</a></p>
+                <p><a href="https://maps.google.com/?q=DENR+PENRO+Bacolod+City" target="_blank">Brgy. 39, Bacolod City ↗</a></p>
             </div>
             <div>
                 <i class="fas fa-envelope"></i>
@@ -663,13 +663,14 @@ document.getElementById("suggestionForm").addEventListener("submit", async funct
   };
 
   try {
+    const payload = new URLSearchParams();
+    payload.append("formType", data.formType);
+    payload.append("suggestion", data.suggestion);
+
     await fetch(scriptURL, {
       method: "POST",
       mode: "no-cors",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: JSON.stringify(data)
+      body: payload
     });
 
     status.innerHTML = '<span style="color:green;">✓ Suggestion submitted successfully.</span>';
